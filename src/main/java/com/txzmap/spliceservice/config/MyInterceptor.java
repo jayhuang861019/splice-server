@@ -1,8 +1,5 @@
 package com.txzmap.spliceservice.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.txzmap.spliceservice.entity.MyResult;
-import com.txzmap.spliceservice.entity.TbUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -25,22 +22,22 @@ public class MyInterceptor implements HandlerInterceptor {
         try {
             HttpSession session = request.getSession();
             //统一拦截（查询当前session是否存在user）(这里user会在每次登录成功后，写入session)
-            TbUser user = (TbUser) session.getAttribute("user");
-            if (user == null) {
-                response.sendRedirect(request.getContextPath() + "/login.html");
-            }
-            String requestPath = request.getServletPath();
+//            UserOld userOld = (UserOld) session.getAttribute("userOld");
+//            if (userOld == null) {
+//                response.sendRedirect(request.getContextPath() + "/login.html");
+//            }
+//            String requestPath = request.getServletPath();
 
             //如果是拼接请求则判断账号是否过期
-            if (requestPath.equals("/splice")) {
-                if (user.isAvaliable())
-                    return true;
-                logger.error("the account is over expiration....");
-                String resultJson = new ObjectMapper().writeValueAsString(new MyResult(0, "您的账号已过期，请联系客服！"));
-                response.setContentType("application/json;charset=utf-8");
-                response.getWriter().print(resultJson);
-                return false;
-            }
+//            if (requestPath.equals("/splice")) {
+//                if (userOld.isAvaliable())
+//                    return true;
+//                logger.error("the account is over expiration....");
+//                String resultJson = new ObjectMapper().writeValueAsString(new MyResult(0, "您的账号已过期，请联系客服！"));
+//                response.setContentType("application/json;charset=utf-8");
+//                response.getWriter().print(resultJson);
+//                return false;
+//            }
             return true;
         } catch (Exception e) {
             e.printStackTrace();

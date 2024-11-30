@@ -12,6 +12,14 @@ logging:
   level:
     com.txzmap.spliceservice.service: warn
 
+#swagger 配置
+springfox:
+  documentation:
+    # 总开关（同时设置auto-startup=false，否则/v3/api-docs等接口仍能继续访问）
+    enabled: true
+    auto-startup: true
+    swagger-ui:
+      enabled: true
 #项目配置
 myconfig:
   #临时下载的文件地址

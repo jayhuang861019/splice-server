@@ -51,13 +51,13 @@
                     <el-row>
                         <el-col :span="6">用户名：</el-col>
                         <el-col :span="18">
-                            <el-input clearable v-model="user.userName"></el-input>
+                            <el-input clearable v-model="userOld.userName"></el-input>
                         </el-col>
                     </el-row>
                     <el-row>
                         <el-col :span="6">密&emsp;码：</el-col>
                         <el-col :span="18">
-                            <el-input clearable v-model="user.password" show-password></el-input>
+                            <el-input clearable v-model="userOld.password" show-password></el-input>
                         </el-col>
                     </el-row>
                     <el-row style="margin-top: 20px;">
@@ -65,7 +65,7 @@
                             <el-button size="medium" @click="login">登陆</el-button>
                         </el-col>
                         <el-col :span="12" style="text-align: center;">
-                            <el-button size="medium" @click="user={userName:'',password:''}">清空</el-button>
+                            <el-button size="medium" @click="userOld={userName:'',password:''}">清空</el-button>
                         </el-col>
                     </el-row>
                 </div>
@@ -86,7 +86,7 @@
         el: '#app',
         data: {
             url: 'login?',
-            user: {
+            userOld: {
                 userName: 'test',
                 password: '123456'
             },
@@ -94,11 +94,11 @@
         },
         methods: {
             login() {
-                if (this.user.userName == '' || this.user.password == '') {
+                if (this.userOld.userName == '' || this.userOld.password == '') {
                     this.$message.error('请输入完整的用户名和密码！');
                     return;
                 }
-                axios.get(this.url + Qs.stringify(this.user)).then(r => {
+                axios.get(this.url + Qs.stringify(this.userOld)).then(r => {
                     if (r.status == 200) {
                         console.log(r.data);
                         if (r.data.code == 1) {
