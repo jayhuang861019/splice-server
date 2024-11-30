@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.txzmap.spliceservice.mapper.MapSourceMapper">
+
+    <!-- id:statement的id 或者叫做sql的id-->
+    <!-- parameterType:声明输入参数的类型 -->
+    <!-- resultType:声明输出结果的类型，应该填写pojo的全路径 -->
+    <!-- #{}：输入参数的占位符，相当于jdbc的？ -->
+
+
+    <!--<resultMap id="BaseResultMap" type="com.txzmap.cms.entity.Article">-->
+    <!--<result column="id" jdbcType="INTEGER" property="id"/>-->
+    <!--<result column="softwareName" jdbcType="VARCHAR" property="softwareName"/>-->
+    <!--<result column="columnId" jdbcType="INTEGER" property="columnId"/>-->
+    <!--</resultMap>-->
+
+    <select id="getAll" resultType="com.txzmap.spliceservice.entity.MapSource">
+        select * from tb_map_source
+    </select>
+
+    <select id="get" resultType="com.txzmap.spliceservice.entity.MapSource">
+        select * from tb_map_source where id=#{mapId}
+    </select>
+
+
+
+
+    <select id="add" parameterType="com.txzmap.spliceservice.entity.MapSource">
+        insert into  tb_map_source
+        (sourceName,url,tileResolution,tileFileSize)
+        values (#{sourceName},#{url},#{tileResolution},#{tileFileSize});
+    </select>
+
+
+    <select id="delete" parameterType="Integer">
+        delete from tb_map_source where id=#{id}
+    </select>
+
+
+</mapper>

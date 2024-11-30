@@ -1,0 +1,27 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /splice
+
+spring:
+  datasource:
+    url: jdbc:sqlite:/home/jayhuang/MapSource.db
+    driver-class-name: org.sqlite.JDBC
+
+logging:
+  level:
+    com.txzmap.spliceservice.service: warn
+
+#项目配置
+myconfig:
+  #临时下载的文件地址
+  downloadPath: /home/jayhuang/maptile/
+
+
+#mybatis
+mybatis:
+  mapper-locations: classpath:mapping/*Mapper.xml
+  type-aliases-package: com.txzmap.spliceservice.entity
+
+
+

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登陆</title>
+    <link rel="stylesheet" href="./element-ui/elementui-2.10.0.css">
+    <script src="./js/vue.min.js"></script>
+    <script src="./element-ui/elementui-2.10.0.js"></script>
+    <script src="./js/axios.min.js"></script>
+    <script src="./js/qs.js"></script>
+    <link rel="stylesheet" href="./css/global.css">
+    <style>
+        body {
+            color: white;
+        }
+        
+        .box-card {
+            position: absolute;
+            left: 50%;
+            top: 20%;
+            transform: translate(-50%, 0);
+            width: 500px;
+        }
+        
+        .el-col {
+            line-height: 50px;
+            font-size: 16px;
+        }
+        
+        .box-card .el-button {
+            min-width: 120px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+
+        <div class="box-card">
+            <el-card>
+                <div slot="header" class="clearfix" style="text-align: center;">
+                    <span style="font-size: 24px;
+                font-weight: bold;
+                color: #3399ea;
+                ">高清地图拼接系统</span>
+                </div>
+                <div>
+                    <el-row>
+                        <el-col :span="6">用户名：</el-col>
+                        <el-col :span="18">
+                            <el-input clearable v-model="user.userName"></el-input>
+                        </el-col>
+                    </el-row>
+                    <el-row>
+                        <el-col :span="6">密&emsp;码：</el-col>
+                        <el-col :span="18">
+                            <el-input clearable v-model="user.password" show-password></el-input>
+                        </el-col>
+                    </el-row>
+                    <el-row style="margin-top: 20px;">
+                        <el-col :span="12" style="text-align: center;">
+                            <el-button size="medium" @click="login">登陆</el-button>
+                        </el-col>
+                        <el-col :span="12" style="text-align: center;">
+                            <el-button size="medium" @click="user={userName:'',password:''}">清空</el-button>
+                        </el-col>
+                    </el-row>
+                </div>
+
+
+            </el-card>
+            <div>
+                <span style="line-height: 40px;color:black">体验账号<b>test</b>,密码<b>123456</b>,账号购买与咨询请联系微信客服<b>emap_service</b></span>
+            </div>
+            <div style="text-align: center;color: #00000088;">
+                <span>今日访问&nbsp;{{todayView}}&nbsp;人</span>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            url: 'login?',
+            user: {
+                userName: 'test',
+                password: '123456'
+            },
+            todayView: 0
+        },
+        methods: {
+            login() {
+                if (this.user.userName == '' || this.user.password == '') {
+                    this.$message.error('请输入完整的用户名和密码！');
+                    return;
+                }
+                axios.get(this.url + Qs.stringify(this.user)).then(r => {
+                    if (r.status == 200) {
+                        console.log(r.data);
+                        if (r.data.code == 1) {
+                            this.$message.success('登陆成功！');
+                            window.location = "./map.html";
+                        } else if (r.data.code == 0)
+                            this.$message.error(r.data.info);
+                        else
+                            this.$message.error('未知错误！');
+                    }
+                })
+            },
+        },
+        mounted() {
+            axios.get('today').then(data => {
+                if (data.status == 200) {
+                    this.todayView = data.data;
+                }
+            })
+        }
+    })
+</script>
+
+</html>

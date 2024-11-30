@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.txzmap.spliceservice.mapper.TbTileMapper">
+
+
+    <resultMap id="myResultMap" type="com.txzmap.spliceservice.entity.TbTile">
+        <result property="mapId" column="mapId" jdbcType="VARCHAR"/>
+        <result property="x" column="x" jdbcType="INTEGER"/>
+        <result property="y" column="y" jdbcType="INTEGER"/>
+        <result property="z" column="z" jdbcType="INTEGER"/>
+        <result property="tile" column="tile" jdbcType="BLOB"/>
+    </resultMap>
+
+
+    <select id="getTile" resultMap="myResultMap">
+        select * from tb_tile where mapId=#{mapId} and x=#{x} and y=#{y} and z=#{z}
+    </select>
+
+
+    <select id="insert" parameterType="com.txzmap.spliceservice.entity.TbTile">
+       insert  into tb_tile (mapId, x, y, z, tile) VALUES (#{mapId},#{x},#{y},#{z},#{tile})
+    </select>
+
+
+</mapper>
