@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.txzmap</groupId>
     <artifactId>spliceservice</artifactId>
-    <version>0.0.9-RELEASE</version>
+    <version>0.0.11-RELEASE</version>
     <description>探险者地图拼接服务</description>
     <properties>
         <java.version>8</java.version>
@@ -41,6 +41,13 @@
             <groupId>org.osgeo</groupId>
             <artifactId>proj4j</artifactId>
             <version>0.1.0</version>
+        </dependency>
+
+        <!--jwt依赖-->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.0</version>
         </dependency>
 
 

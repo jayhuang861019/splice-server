@@ -1,5 +1,6 @@
 package com.txzmap.spliceservice.util;
 
+import com.txzmap.spliceservice.entity.GeoPos;
 import org.osgeo.proj4j.*;
 
 import javax.imageio.ImageIO;
@@ -92,8 +93,8 @@ public class GeoUtil {
         return new double[]{projCoordinate.x, projCoordinate.y};
     }
 
-    public static double[] WGS84ToCGCS2000(double[] latlon) {
-        return WGS84ToCGCS2000(latlon[0], latlon[1]);
+    public static double[] WGS84ToCGCS2000(GeoPos latlon) {
+        return WGS84ToCGCS2000(latlon.getLat(), latlon.getLng());
     }
 
     public static void main(String[] args) throws IOException {
@@ -104,13 +105,9 @@ public class GeoUtil {
         Font font = new Font("Arial", Font.BOLD, 16);
         graphics2D.setFont(font);
         graphics2D.setStroke(new BasicStroke(1.0f));
-
-
-        double[] latlngLeftTop = new double[]{23.119601, 114.346304};
-        double[] latlngRightBottom = new double[]{23.058963, 114.434452};
         //两个角的高斯坐标
-        double[] xy1 = GeoUtil.WGS84ToCGCS2000(latlngLeftTop);
-        double[] xy2 = GeoUtil.WGS84ToCGCS2000(latlngRightBottom);
+        double[] xy1 = GeoUtil.WGS84ToCGCS2000(new GeoPos(23.119601, 114.346304));
+        double[] xy2 = GeoUtil.WGS84ToCGCS2000(new GeoPos(23.058963, 114.434452));
         double x1 = xy1[1];
         double x2 = xy2[1];
         double y1 = xy1[0];

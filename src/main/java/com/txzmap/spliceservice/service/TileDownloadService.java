@@ -1,6 +1,7 @@
 package com.txzmap.spliceservice.service;
 
 import com.txzmap.spliceservice.config.MyConfig;
+import com.txzmap.spliceservice.entity.GeoPos;
 import com.txzmap.spliceservice.entity.MapSource;
 import com.txzmap.spliceservice.entity.TaskInfoList;
 import com.txzmap.spliceservice.entity.TbTile;
@@ -20,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -192,13 +194,16 @@ public class TileDownloadService {
             drawCGCS2000GaussGrid(imageNew, task);
         else if (task.getGrid() == 1)
             drawGridLine(imageNew, task);
+        if (!task.getVip()) {
+            drawWaterMark(imageNew);
+        }
 
-        String fileName = System.currentTimeMillis() + ".jpg";
-        File outFile = new File(myConfig.getDownloadPath() + fileName);
+        String fName = task.getUuid() + ".jpg";
+        File outFile = new File(myConfig.getDownloadPath() + fName);
         try {
             ImageIO.write(imageNew, "jpg", outFile);
             logger.debug("输出完毕！" + outFile.length() + "bytes" + "\n");
-            return fileName;
+            return fName;
         } catch (IOException e) {
             e.printStackTrace();
             return "error";
@@ -222,6 +227,62 @@ public class TileDownloadService {
 
     }
 
+    private void drawWaterMark(BufferedImage image) {
+
+        int imageWidth = image.getWidth();
+        int imageHeight = image.getHeight();
+
+        // 创建Graphics2D对象
+        Graphics2D g2d = (Graphics2D) image.getGraphics();
+
+        // 水印文字
+        String watermarkText = "txzmap.com";
+
+        // 设置字体和颜色
+        Font font = new Font("Arial", Font.BOLD, 48);
+        g2d.setFont(font);
+        g2d.setColor(new Color(255, 0, 0, 128)); // 半透明红色
+
+        // 计算对角线长度
+        double diagonalLength = Math.sqrt(imageWidth * imageWidth + imageHeight * imageHeight);
+
+        // 计算文字宽度
+        int textWidth = g2d.getFontMetrics().stringWidth(watermarkText);
+
+        // 计算文字之间的间距（根据文字宽度和对角线长度均匀分布）
+        int numWatermarks = (int) (diagonalLength / textWidth);
+        double spacing = diagonalLength / numWatermarks;
+
+        // 计算对角线的角度
+        double angle = Math.atan2(imageHeight, imageWidth);
+
+        // 在对角线上均匀分布水印文字
+        for (int i = 0; i < numWatermarks; i++) {
+            // 计算当前文字的位置（沿对角线）
+            double distance = i * spacing;
+            int x = (int) (distance * Math.cos(angle));
+            int y = (int) (distance * Math.sin(angle));
+
+            // 保存当前Graphics2D的变换状态
+            AffineTransform originalTransform = g2d.getTransform();
+
+            // 平移并旋转Graphics2D到当前文字的位置
+            g2d.translate(x, y);
+            g2d.rotate(angle);
+
+            // 绘制水印文字
+            g2d.drawString(watermarkText, 0, 0);
+
+            // 恢复Graphics2D的原始变换状态
+            g2d.setTransform(originalTransform);
+        }
+
+        // 释放Graphics2D对象
+        g2d.dispose();
+
+
+    }
+
     /**
      * 刻画经纬度线
      *
@@ -231,8 +292,10 @@ public class TileDownloadService {
     private void drawGridLine(BufferedImage image, TaskInfoList.TaskInfo task) {
         int zoom = task.getZoom();
         float gridSpan = getLatLonGridSpan(zoom);
-        double[] latlngLeftTop = TileUtil.tile2boundingBox(task.getMinX(), task.getMinY(), zoom).getLeftTop();
-        double[] latlngRightBottom = TileUtil.tile2boundingBox(task.getMaxX(), task.getMaxY(), zoom).getRightBottom();
+        double[] latlngLeftTop = new double[]{1d, 1d};
+        // TileUtil.tile2boundingBox(task.getMinX(), task.getMinY(), zoom).getNorthWest();
+        double[] latlngRightBottom = new double[]{2d, 2d};
+        //TileUtil.tile2boundingBox(task.getMaxX(), task.getMaxY(), zoom).getSouthEast();
 
         //配置相关的样式
         Graphics2D graphics2D = image.createGraphics();
@@ -302,54 +365,129 @@ public class TileDownloadService {
         Graphics2D graphics2D = image.createGraphics();
         Font font = new Font("Arial", Font.BOLD, 16);
         graphics2D.setFont(font);
-        graphics2D.setStroke(new BasicStroke(1.0f));
         graphics2D.setColor(Color.decode(task.getGridColor()));
-        double[] latlngLeftTop = TileUtil.tile2boundingBox(task.getMinX(), task.getMinY(), zoom).getLeftTop();
-        double[] latlngRightBottom = TileUtil.tile2boundingBox(task.getMaxX(), task.getMaxY(), zoom).getRightBottom();
-        //两个角的高斯坐标
-        double[] xy1 = GeoUtil.WGS84ToCGCS2000(latlngLeftTop);
-        double[] xy2 = GeoUtil.WGS84ToCGCS2000(latlngRightBottom);
-        double x1 = xy1[1];
-        double x2 = xy2[1];
-        double y1 = xy1[0];
-        double y2 = xy2[0];
+        graphics2D.setStroke(new BasicStroke(task.getGridWidth()));
 
-        double xSpan = x1 - x2;
-        double ySpan = y2 - y1;
+        //顺时针从左上角开始分别为p1 p2 p3 p4
+        GeoPos p1 = TileUtil.tile2boundingBox(task.getMinX(), task.getMinY(), zoom).getNorthWest();
+        GeoPos p2 = TileUtil.tile2boundingBox(task.getMaxX(), task.getMinY(), zoom).getNorthEast();
+        GeoPos p3 = TileUtil.tile2boundingBox(task.getMaxX(), task.getMaxY(), zoom).getSouthEast();
+        GeoPos p4 = TileUtil.tile2boundingBox(task.getMinX(), task.getMaxY(), zoom).getSouthWest();
+
+        //4个角的高斯坐标
+        double[] xy1 = GeoUtil.WGS84ToCGCS2000(p1);
+        double[] xy2 = GeoUtil.WGS84ToCGCS2000(p2);
+        double[] xy3 = GeoUtil.WGS84ToCGCS2000(p3);
+        double[] xy4 = GeoUtil.WGS84ToCGCS2000(p4);
+
+        List<Double> xLeftList = findDivisibleBy1000(xy1[1], xy4[1]);
+        List<Double> xRightList = findDivisibleBy1000(xy2[1], xy3[1]);
+
         int width = image.getWidth();
         int height = image.getHeight();
 
-        double xPerPixel = height / xSpan;
-        double yPerPixel = width / ySpan;
-
-        double x0 = Math.ceil(x2 / 1000) * 1000;
-        String label;
-        if (x0 < x1) {
-            for (int i = 0; (height - (x0 + i * 1000 - x2) * xPerPixel) > 0; i++) {
-                int pt = (int) (height - (x0 + i * 1000 - x2) * xPerPixel);
-                graphics2D.drawLine(0, pt, width, pt);
-                label = GeoUtil.df_x.format(x0 + i * 1000);
-                if (i == 0)
-                    graphics2D.drawString(label, 0 + 8, pt);
-                else
-                    graphics2D.drawString(label.substring(2, 4), 0 + 8, pt-8);
-
+        if (xRightList.size() > 0 && xLeftList.size() > 0) {
+            double xSpanLeft = Math.abs(xy1[1] - xy4[1]), xSpanRight = Math.abs(xy2[1] - xy3[1]);
+            double xStartLeft = Math.min(xy1[1], xy4[1]), xStartRight = Math.min(xy2[1], xy3[1]);
+            double xPerPixelLeft = height / xSpanLeft, xPerPixelRight = height / xSpanRight;
+            for (double xLeft : xLeftList) {
+                for (double xRight : xRightList) {
+                    if (xLeft == xRight) {
+                        //连成一要线
+                        double yLeft = (xLeft - xStartLeft) * xPerPixelLeft;
+                        double yRight = (xRight - xStartRight) * xPerPixelRight;
+                        graphics2D.drawLine(0, (int) yLeft, width, (int) yRight);
+                    }
+                }
             }
+
         }
-        double y0 = Math.ceil(y1 / 1000) * 1000;
-        if (y0 < y2) {
-            for (int i = 0; (width - (y0 + i * 1000 - y1) * yPerPixel) > 0; i++) {
-                int pt = (int) ((y0 + i * 1000 - y1) * yPerPixel);
-                graphics2D.drawLine(pt, 0, pt, height);
-                label = GeoUtil.df_y.format(y0 + i * 1000);
-                if (i == 0)
-                    graphics2D.drawString(label, pt, 0 + 20);
-                else
-                    graphics2D.drawString(label.substring(1, 3), pt+8, 0 + 20);
-            }
+
+        List<Double> yListTop = findDivisibleBy1000(xy2[0], xy1[0]);
+        List<Double> yListBottom = findDivisibleBy1000(xy4[0], xy3[0]);
+
+        if (yListTop.size() > 0 && yListBottom.size() > 0) {
+            yListTop.forEach(yTop -> {
+                yListBottom.forEach(yBottom -> {
+                    if (yTop == yBottom) {
+                        //连成一要线
+                    }
+                });
+            });
         }
+
+
+//        double x1 = xy1[1];
+//        double x2 = xy3[1];
+//        double y1 = xy1[0];
+//        double y2 = xy3[0];
+//
+//        double xSpanLeft = Math.abs(xy1[1] - xy4[1]);
+//        double xSpanRight = Math.abs(xy2[1] - xy3[1]);
+//
+//        double ySpanTop = Math.abs(xy2[0] - xy1[0]);
+//        double ySpanBottom = Math.abs(xy3[0] - xy4[0]);
+//
+//        double ySpan = y2 - y1;
+//
+//
+//        double xPerPixel = height / 1;
+//        double yPerPixel = width / ySpan;
+//
+//        double x0 = Math.ceil(x2 / 1000) * 1000;
+//        String label;
+//        if (x0 < x1) {
+//            for (int i = 0; (height - (x0 + i * 1000 - x2) * xPerPixel) > 0; i++) {
+//                int pt = (int) (height - (x0 + i * 1000 - x2) * xPerPixel);
+//                graphics2D.drawLine(0, pt, width, pt);
+//                label = GeoUtil.df_x.format(x0 + i * 1000);
+//                if (i == 0)
+//                    graphics2D.drawString(label, 0 + 8, pt);
+//                else
+//                    graphics2D.drawString(label.substring(2, 4), 0 + 8, pt - 8);
+//
+//            }
+//        }
+//        double y0 = Math.ceil(y1 / 1000) * 1000;
+//        if (y0 < y2) {
+//            for (int i = 0; (width - (y0 + i * 1000 - y1) * yPerPixel) > 0; i++) {
+//                int pt = (int) ((y0 + i * 1000 - y1) * yPerPixel);
+//                graphics2D.drawLine(pt, 0, pt, height);
+//                label = GeoUtil.df_y.format(y0 + i * 1000);
+//                if (i == 0)
+//                    graphics2D.drawString(label, pt, 0 + 20);
+//                else
+//                    graphics2D.drawString(label.substring(1, 3), pt + 8, 0 + 20);
+//            }
+//        }
 
     }
+
+    /**
+     * 找出 a 和 b 之间所有可以整除 1000 的数
+     *
+     * @param a 起始值
+     * @param b 结束值
+     * @return 可以整除 1000 的数的列表
+     */
+    public static List<Double> findDivisibleBy1000(double a, double b) {
+        List<Double> result = new ArrayList<>();
+
+        // 确保 a 是较小的数，b 是较大的数
+        double start = Math.min(a, b);
+        double end = Math.max(a, b);
+
+        // 找到第一个大于等于 start 且能整除 1000 的数
+        double firstDivisible = Math.ceil(start / 1000) * 1000;
+
+        // 遍历所有能整除 1000 的数
+        for (double num = firstDivisible; num <= end; num += 1000) {
+            result.add(num);
+        }
+
+        return result;
+    }
+
 
     /**
      * 生成具体的url链接

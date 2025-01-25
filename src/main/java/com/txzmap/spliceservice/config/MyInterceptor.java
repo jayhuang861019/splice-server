@@ -30,7 +30,7 @@ public class MyInterceptor implements HandlerInterceptor {
 
             //如果是拼接请求则判断账号是否过期
 //            if (requestPath.equals("/splice")) {
-//                if (userOld.isAvaliable())
+//                if (userOld.vipIsAvailable())
 //                    return true;
 //                logger.error("the account is over expiration....");
 //                String resultJson = new ObjectMapper().writeValueAsString(new MyResult(0, "您的账号已过期，请联系客服！"));

@@ -14,27 +14,27 @@ public class MapSourceService {
     private MapSourceMapper mapSourceMapper;
 
 
-    public List<MapSource> getAll() {
-        return mapSourceMapper.getAll();
-    }
-
-
-    public MapSource get(Integer mapId) {
-        List<MapSource> mapSources = mapSourceMapper.get(mapId);
-        if (mapSources != null)
-            return mapSources.get(0);
-        else
-            return null;
-    }
-
     public void add(MapSource source) {
         mapSourceMapper.add(source);
     }
 
-    public void delete(Integer id) {
-        mapSourceMapper.delete(id);
+    public void delete(Integer id, Integer owner) {
+        mapSourceMapper.delete(id, owner);
     }
 
+    /**
+     * 获取所有的地图源
+     *
+     * @param owner
+     * @return
+     */
+    public List<MapSource> getMySource(Integer owner) {
+        return mapSourceMapper.getMySource(owner);
+    }
+
+    public MapSource getSourceById(Integer id) {
+        return mapSourceMapper.getSourceById(id);
+    }
 
 
 }

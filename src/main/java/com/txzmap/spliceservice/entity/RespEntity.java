@@ -30,7 +30,23 @@ public class RespEntity {
         this.resultCode = resultCode;
     }
 
-    public RespEntity(){}
+    public RespEntity() {
+    }
+
+    public static RespEntity err(String info) {
+        RespEntity entity = new RespEntity(RespCode.CODE_ERROR);
+        entity.setInfo(info);
+        return entity;
+    }
+
+    public static RespEntity ok(Object object) {
+        RespEntity entity = new RespEntity(RespCode.CODE_OK);
+        entity.setInfo("操作成功");
+        entity.setResult(object);
+        return entity;
+    }
+
+
 }
 
 

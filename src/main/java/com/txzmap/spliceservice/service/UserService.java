@@ -23,7 +23,7 @@ public class UserService {
     }
 
 
-    public User selectUserById(Long id) {
+    public User selectUserById(Integer id) {
         return userMapper.selectUserById(id);
     }
 
@@ -40,6 +40,14 @@ public class UserService {
         loginUser.setLastIn(System.currentTimeMillis());
         updateUser(loginUser);
         return loginUser;
+    }
+
+    public boolean changePasswordById(Integer id, String oldPassword, String newPassword) {
+        return userMapper.updatePasswordById(id, oldPassword, newPassword) > 0;
+    }
+
+    public int updateVIPInfo(User user) {
+        return userMapper.updateVIPInfo(user);
     }
 }
 

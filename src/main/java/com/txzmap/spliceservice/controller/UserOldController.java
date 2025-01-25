@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -41,7 +40,6 @@ public class UserOldController {
 
     @Autowired
     MapSourceService mapSourceService;
-
 
 
     @Autowired
@@ -59,29 +57,22 @@ public class UserOldController {
     static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 
-    @GetMapping("/getSource")
-    public List<MapSource> getMapSourceList() {
-        return mapSourceService.getAll();
-    }
+//    @GetMapping("/getSource")
+//    public List<MapSource> getMapSourceList() {
+//        return mapSourceService.getAll();
+//    }
 
 
-    @PostMapping("/addSource")
-    public MyResult add(@RequestParam(required = true, value = "sourceName") String name,
-                        @RequestParam(required = true, value = "url") String url,
-                        Integer resolution,
-                        Integer tileFileSize) {
-        MapSource source = new MapSource(name, url, resolution, tileFileSize);
-        mapSourceService.add(source);
-        return new MyResult(1, "添加成功！");
-    }
+//    @PostMapping("/addSource")
+//    public MyResult add(@RequestParam(required = true, value = "sourceName") String name,
+//                        @RequestParam(required = true, value = "url") String url,
+//                        Integer resolution,
+//                        Integer tileFileSize) {
+//        MapSource source = new MapSource(name, url, resolution, tileFileSize);
+//        mapSourceService.add(source);
+//        return new MyResult(1, "添加成功！");
+//    }
 
-
-    @GetMapping("/delete")
-    public MyResult deleteMapSource(@RequestParam(required = true) Integer id) {
-
-        mapSourceService.delete(id);
-        return new MyResult(1, "添加成功！");
-    }
 
     @PostMapping("/splice")
     public MyResult splice(@RequestParam(required = true) Integer mapId,
@@ -96,15 +87,17 @@ public class UserOldController {
     ) {
         //生成taskId
         String taskId = UUID.randomUUID().toString();
-        MapSource mapSource = mapSourceService.get(mapId);
+        MapSource mapSource = null;
+        //MapSource mapSource = mapSourceService.get(mapId);
         if (mapSource == null) {
             return new MyResult(0, "地图源不存在！");
         }
         Integer[] leftTop = new Integer[]{leftTopTileX, leftTopTileY};
         Integer[] rightBottom = new Integer[]{rightBottomTileX, rightBottomTileY};
 
-        TaskInfoList.TaskInfo taskInfo = new TaskInfoList.TaskInfo(taskId, name, mapSource, leftTop, rightBottom, z, grid, gridColor);
+        //TaskInfoList.TaskInfo taskInfo = new TaskInfoList.TaskInfo(taskId, name, mapSource, leftTop, rightBottom, z, grid, gridColor);
 
+        TaskInfoList.TaskInfo taskInfo = new TaskInfoList.TaskInfo();
         logger.error(taskInfo.toString());
 
         if (taskInfo.getTotal() > 1000)
@@ -155,7 +148,7 @@ public class UserOldController {
 //            todayViewCount++;
 //            return new MyResult(1, "登陆成功！");
 //        }
-        return  null;
+        return null;
     }
 
     @GetMapping("/today")
